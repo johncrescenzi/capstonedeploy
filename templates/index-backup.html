@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MBTI Predictor</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.4.4/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+
+  <div class="navbar bg-base-100">
+    <div class="flex-1">
+      <a class="btn btn-ghost text-xl">daisyUI</a>
+    </div>
+    <div class="flex-none gap-2">
+      <div class="form-control">
+        <input id="userComment" name="userComment" placeholder="This will be used to determine the MBTI of a person" class="input input-bordered" required />
+      </div>
+      <div class="navbar-end">
+        <button id="predictButton" onclick="predictMBTI()" class="btn btn-primary">Predict</button>
+      </div>    
+  </div>
+
+  <div id="predictionResult" class="w-full text-center text-white"></div> 
+  <span id="loadingSpinner" class="loading loading-spinner loading-lg" style="display: none;"></span>
+
+
+   <!-- Button for Visualizations -->
+  <div class="join">
+    <input onclick="showDistribution()" class="join-item btn" type="radio" name="options" aria-label="Distribution" />
+    <input onclick="showWordclouds()" class="join-item btn" type="radio" name="options" aria-label="Wordcloud" />
+    <input onclick="showPostLength()" class="join-item btn" type="radio" name="options" aria-label="Post Length" />
+  </div>
+
+  <div id="visualization" class="hero"></div>
+
+    </body>
+  <script>
+    function predictMBTI() {
+        // Show loading spinner
+        document.getElementById("predictButton").style.display = "none";
+        document.getElementById("loadingSpinner").style.display = "inline-block";
+
+        var userComment = document.getElementById("userComment").value;
+        var formData = new FormData();
+        formData.append("userComment", userComment);
+
+        fetch('/predict', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if ('predicted_mbti' in data) {
+                var predictedMBTI = data.predicted_mbti;
+                document.getElementById("predictionResult").innerHTML = `
+                    <h3>MBTI Result:</h3>
+                    <h2>${predictedMBTI}</h2>`;
+            }
+            // Hide loading spinner
+            document.getElementById("predictButton").style.display = "inline-block";
+            document.getElementById("loadingSpinner").style.display = "none";
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            // Hide loading spinner on error
+            document.getElementById("predictButton").style.display = "inline-block";
+            document.getElementById("loadingSpinner").style.display = "none";
+        });
+    }
+
+      function showDistribution() {
+          fetch('/distribution')
+          .then(response => {
+              if (response.ok) {
+                  return response.blob();
+              }
+              throw new Error('Network response was not ok.');
+          })
+          .then(blob => {
+              // Display the visualization
+              document.getElementById('visualization').innerHTML = `
+                  <img src="${URL.createObjectURL(blob)}" alt="Distribution of MBTI Types" />`;
+          })
+          .catch(error => console.error('Error:', error));
+      }
+
+      function showWordclouds() {
+          fetch('/wordclouds')
+          .then(response => {
+              if (response.ok) {
+                  return response.blob();
+              }
+              throw new Error('Network response was not ok.');
+          })
+          .then(blob => {
+              // Display the visualization
+              document.getElementById('visualization').innerHTML = `
+                  <img src="${URL.createObjectURL(blob)}" alt="Word Clouds" />`;
+          })
+          .catch(error => console.error('Error:', error));
+      }
+
+      function showPostLength() {
+          fetch('/postlength')
+          .then(response => {
+              if (response.ok) {
+                  return response.blob();
+              }
+              throw new Error('Network response was not ok.');
+          })
+          .then(blob => {
+              // Display the visualization
+              document.getElementById('visualization').innerHTML = `
+                  <img src="${URL.createObjectURL(blob)}" alt="Post Length" />`;
+          })
+          .catch(error => console.error('Error:', error));
+      }
+  </script>
+
+
+</html>
