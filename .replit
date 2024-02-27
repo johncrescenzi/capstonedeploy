@@ -1,4 +1,4 @@
-entrypoint = "Main.py"
+entrypoint = "gunicorn -w 4 -b 0.0.0.0:8080 Main.py:app"
 modules = ["python-3.10:v18-20230807-322e88b"]
 
 hidden = [".pythonlibs"]
@@ -7,5 +7,5 @@ hidden = [".pythonlibs"]
 channel = "stable-23_05"
 
 [deployment]
-run = ["python3", "main.py"]
+run = ["python3", "Main.py"]
 deploymentTarget = "cloudrun"
